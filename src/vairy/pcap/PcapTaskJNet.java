@@ -2,40 +2,22 @@ package vairy.pcap;
 
 import java.io.IOError;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
-import org.jnetpcap.ByteBufferHandler;
-import org.jnetpcap.JBufferHandler;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapBpfProgram;
-import org.jnetpcap.PcapDumper;
 import org.jnetpcap.PcapHeader;
 import org.jnetpcap.PcapIf;
-import org.jnetpcap.nio.JBuffer;
-import org.jnetpcap.packet.JScanner;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.packet.PcapPacketHandler;
 import org.jnetpcap.winpcap.WinPcap;
 import org.pcap4j.packet.Packet;
-import org.pcap4j.packet.UnknownPacket;
 import org.pcap4j.packet.factory.PacketFactories;
 import org.pcap4j.packet.factory.PacketFactory;
 import org.pcap4j.packet.namednumber.DataLinkType;
-
-import com.slytechs.library.JNILibrary;
-import com.sun.jna.IntegerType;
-import com.sun.jna.NativeLong;
-
-import vairy.pcap.PcapTask.PacketDataListener;
-import vairy.util.VairyTimeAvgTask;
 
 public class PcapTaskJNet extends Thread implements PcapTask {
 	public class BuildData {
@@ -50,10 +32,14 @@ public class PcapTaskJNet extends Thread implements PcapTask {
 	public class AddDataque implements PcapPacketHandler<Integer> {
 		@Override
 		public void nextPacket(PcapPacket packet, Integer user){
-			packet.getCaptureHeader();
-			byte[] dataarray = packet.getByteArray(0, packet.getPacketWirelen());
-			BuildData buildData = new BuildData(packet.getCaptureHeader(),dataarray);
-			buildque.add(buildData);
+			try{
+				packet.getCaptureHeader();
+				byte[] dataarray = packet.getByteArray(0, packet.getPacketWirelen());
+				BuildData buildData = new BuildData(packet.getCaptureHeader(),dataarray);
+				buildque.add(buildData);
+			}catch(java.nio.BufferUnderflowException e){
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -69,15 +55,19 @@ public class PcapTaskJNet extends Thread implements PcapTask {
 		}
 		@Override
 		public void run() {
-			int nano = (int) (ns%1000000);
-			Timestamp ts = new Timestamp(ms);
-			ts.setNanos(nano);
+			try{
+				int nano = (int) (ns%1000000);
+				Timestamp ts = new Timestamp(ms);
+				ts.setNanos(nano);
 
-			Packet newInstance = factory.newInstance(buffer,DataLinkType.getInstance(datalink));
+				Packet newInstance = factory.newInstance(buffer,DataLinkType.getInstance(datalink));
 
-			PacketData4j packetData4j = new PacketData4j(ts, newInstance);
-			dataque.add(packetData4j);
-			listener.gotPacket(packetData4j);
+				PacketData4j packetData4j = new PacketData4j(ts, newInstance);
+				dataque.add(packetData4j);
+				listener.gotPacket(packetData4j);
+			}catch(Exception e){
+				e.printStackTrace();
+			}
 		}
 	}
 

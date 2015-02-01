@@ -1,6 +1,5 @@
 package vairy.invoker;
 
-import java.lang.annotation.Annotation;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

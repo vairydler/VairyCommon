@@ -16,7 +16,7 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="D:/software/java/javalib/jnetpcap-1.4.r1425-1.win64/jnetpcap-1.4.r1425/jnetpcap.jar" sourcepath="D:/software/java/javalib/jnetpcap-code-1431-jnetpcap-trunk">
+	<classpathentry kind="lib" path="D:/software/java/javalib/jnetpcap-1.4.r1425-1.win64/jnetpcap-1.4.r1425/jnetpcap.jar" sourcepath="D:/software/java/javalib/jnetpcap-code-1431-jnetpcap-trunk.zip">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="D:/software/java/javalib/jnetpcap-1.4.r1425-1.win64/jnetpcap-1.4.r1425"/>
 		</attributes>
