@@ -1,6 +1,7 @@
 package vairy.script.engine;
 
 import java.awt.AWTException;
+import java.awt.MouseInfo;
 import java.awt.Robot;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -14,29 +15,51 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import vairy.script.msg.JMsgDialogFactory;
+import vairy.script.robo.VMouseUtil;
+import vairy.script.robo.VRobot;
 import vairy.script.variable.JScriptVarFactory;
 
 public class VScriptEngineFactory{
-	public enum CreateEngineType{
-		ROBOT,
-	};
+	public static Integer ROBO_MASK = 0x01;
+	public static Integer MSG_MASK = 0x02;
+	public static Integer VAR_MASK = 0x04;
 
 	ScriptEngine localengine;
 
 	private VScriptEngineFactory() {
 	}
 
-	public static ScriptEngine getEngineByName(String shortName, final CreateEngineType createsrc){
+	public static ScriptEngine getEngineByName(String shortName, final Integer bindmask){
 		ScriptEngine engineByName = new ScriptEngineManager().getEngineByName(shortName);
-		bindRobot(engineByName);
+		bind(engineByName, bindmask);
 		return engineByName;
+	}
+
+	private static void bind(final ScriptEngine target, final Integer bindmask){
+		Bindings bindings = target.getBindings(ScriptContext.GLOBAL_SCOPE);
+
+		bindings.put("util_out", System.out);
+
+		if(ROBO_MASK == (ROBO_MASK & bindmask)){
+			bindRobot(target);
+		}
+
+		if(MSG_MASK == (MSG_MASK & bindmask)){
+			bindMsg(target);
+		}
+
+		if(VAR_MASK == (VAR_MASK & bindmask)){
+			bindVar(target);
+		}
 	}
 
 	private static void bindRobot(final ScriptEngine target){
 		Bindings bindings = target.getBindings(ScriptContext.GLOBAL_SCOPE);
 
+		bindings.put("util_mouse", new VMouseUtil());
 		try {
-			bindings.put("robo", new Robot());
+			bindings.put("util_robo", new VRobot());
 		} catch (AWTException e) {
 		}
 
@@ -173,9 +196,19 @@ public class VScriptEngineFactory{
 		bindings.put("VK_SUBTRACT", KeyEvent.VK_SUBTRACT);
 		bindings.put("VK_TAB", KeyEvent.VK_TAB);
 		bindings.put("VK_UNDERSCORE", KeyEvent.VK_UNDERSCORE);
+	}
+
+	private static void bindMsg(final ScriptEngine target){
+		Bindings bindings = target.getBindings(ScriptContext.GLOBAL_SCOPE);
+
+		bindings.put("util_msg", new JMsgDialogFactory());
+	}
+
+	private static void bindVar(final ScriptEngine target){
+		Bindings bindings = target.getBindings(ScriptContext.GLOBAL_SCOPE);
 
 		JScriptVarFactory varfactory = new JScriptVarFactory(target);
-		bindings.put("vf", varfactory);
-		bindings.put("global", new HashMap<String, Object>());
+		bindings.put("util_vf", varfactory);
+		bindings.put("util_sram", new HashMap<String, Object>());
 	}
 }

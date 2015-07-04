@@ -24,6 +24,7 @@ public class TimerTime extends GregorianCalendar {
 		if(Calendar.MONTH == field){
 			value = value-1;
 		}
+
 		super.set(field, value);
 	}
 	/**
